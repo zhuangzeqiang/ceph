@@ -726,6 +726,9 @@ install(TARGETS ceph-authtool DESTINATION bin)
 configure_file(${CMAKE_SOURCE_DIR}/src/ceph-coverage.in
   ${CMAKE_BINARY_DIR}/ceph-coverage @ONLY)
 
+configure_file(${CMAKE_SOURCE_DIR}/src/mkcephfs.in
+  ${CMAKE_BINARY_DIR}/mkcephfs @ONLY)
+
 configure_file(${CMAKE_SOURCE_DIR}/src/ceph-debugpack.in
   ${CMAKE_BINARY_DIR}/ceph-debugpack @ONLY)
 
@@ -760,6 +763,7 @@ install(PROGRAMS
   ${CMAKE_SOURCE_DIR}/src/ceph-create-keys
   ${CMAKE_SOURCE_DIR}/src/ceph-disk
   ${CMAKE_SOURCE_DIR}/src/ceph-disk-udev
+  ${CMAKE_BINARY_DIR}/mkcephfs
   DESTINATION sbin)
 
 set(parse_secret_files

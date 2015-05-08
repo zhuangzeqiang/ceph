@@ -45,7 +45,12 @@ librgw_la_SOURCES =  \
 	rgw/rgw_replica_log.cc \
 	rgw/rgw_keystone.cc \
 	rgw/rgw_quota.cc \
-	rgw/rgw_dencoder.cc
+	rgw/rgw_dencoder.cc \
+	rgw/rgw_process.cc \
+	rgw/rgw_request.cc \
+	rgw/rgw_frontend.cc \
+	rgw/rgw_rest_lib.cc
+
 librgw_la_CXXFLAGS = -Woverloaded-virtual ${AM_CXXFLAGS}
 noinst_LTLIBRARIES += librgw.la
 
@@ -135,6 +140,9 @@ noinst_HEADERS += \
 	rgw/rgw_http_errors.h \
 	rgw/rgw_log.h \
 	rgw/rgw_loadgen.h \
+	rgw/rgw_process.h \
+	rgw/rgw_request.h \
+	rgw/rgw_frontend.h \
 	rgw/rgw_multi.h \
 	rgw/rgw_policy_s3.h \
 	rgw/rgw_gc.h \

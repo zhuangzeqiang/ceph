@@ -10,7 +10,6 @@
 
 struct mg_connection;
 
-
 class RGWMongoose : public RGWClientIO
 {
   mg_connection *conn;

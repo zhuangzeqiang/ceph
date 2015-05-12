@@ -46,6 +46,7 @@ librgw_la_SOURCES =  \
 	rgw/rgw_keystone.cc \
 	rgw/rgw_quota.cc \
 	rgw/rgw_dencoder.cc \
+	rgw/rgw_request.cc \
 	rgw/rgw_process.cc \
 	rgw/rgw_request.cc \
 	rgw/rgw_frontend.cc \
@@ -100,6 +101,7 @@ radosgw_SOURCES = \
 	rgw/rgw_swift.cc \
 	rgw/rgw_swift_auth.cc \
 	rgw/rgw_loadgen.cc \
+	rgw/rgw_rest_lib.cc \
 	rgw/rgw_main.cc
 radosgw_CFLAGS = -I$(srcdir)/civetweb/include
 radosgw_LDADD = $(LIBRGW) $(LIBCIVETWEB) $(LIBRGW_DEPS) $(RESOLV_LIBS) $(CEPH_GLOBAL)

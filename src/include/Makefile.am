@@ -13,6 +13,11 @@ rados_include_DATA = \
 	$(srcdir)/include/crc32c.h \
 	$(srcdir)/include/memory.h
 
+if WITH_RADOSGW
+rados_include_DATA += \
+	$(srcdir)/include/rados/librgw.h \
+	$(srcdir)/include/rados/rgw_file.h 
+endif # WITH_RADOSGW
 
 if WITH_RBD
 librbd_includedir = $(includedir)/rbd
@@ -112,4 +117,5 @@ noinst_HEADERS += \
 	include/memory.h \
 	include/rados/memory.h \
 	include/unordered_set.h \
-	include/unordered_map.h
+	include/unordered_map.h \
+	include/rados/rgw_file.h

@@ -10,12 +10,14 @@
 extern void register_test_image_watcher();
 extern void register_test_internal();
 extern void register_test_librbd();
+extern void register_test_object_map();
 
 int main(int argc, char **argv)
 {
   register_test_image_watcher();
   register_test_internal();
   register_test_librbd();
+  register_test_object_map();
 
   ::testing::InitGoogleTest(&argc, argv);
 

@@ -11,7 +11,6 @@
  * Foundation.  See file COPYING.
  *
  */
-
 #ifndef CEPH_LIBRGW_H
 #define CEPH_LIBRGW_H
 
@@ -21,17 +20,18 @@ extern "C" {
 
 class CephContext;
 typedef CephContext* librgw_t;
-int librgw_create(librgw_t *rgw, const char * const id);
-int librgw_acl_bin2xml(librgw_t rgw, const char *bin, int bin_len, char **xml);
-void librgw_free_xml(librgw_t rgw, char *xml);
-int librgw_acl_xml2bin(librgw_t rgw, const char *xml, char **bin, int *bin_len);
-void librgw_free_bin(librgw_t rgw, char *bin);
+int librgw_create(librgw_t* rgw, const char* const id);
+int librgw_acl_bin2xml(librgw_t rgw, const char* bin, int bin_len, char** xml);
+void librgw_free_xml(librgw_t rgw, char* xml);
+int librgw_acl_xml2bin(librgw_t rgw, const char *xml, char** bin,
+		       int* bin_len);
+void librgw_free_bin(librgw_t rgw, char* bin);
 void librgw_shutdown(librgw_t rgw);
 
-/* librgw external interface */  
+/* librgw external interface */
 int librgw_init();
 int librgw_stop();
-  
+
 /* User interface */
 int get_userinfo_by_uid(const string& uid);
 int get_user_acl();
@@ -59,4 +59,4 @@ int set_object_attributes();
 }
 #endif
 
-#endif
+#endif /* CEPH_LIBRGW_H */

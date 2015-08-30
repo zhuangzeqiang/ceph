@@ -908,6 +908,7 @@ if(${WITH_RADOSGW})
     rgw/rgw_process.cc
     rgw/rgw_frontend.cc
     rgw/rgw_rest_lib.cc
+    rgw/rgw_file.cc
     )
 
   add_library(rgw_a STATIC ${rgw_a_srcs})

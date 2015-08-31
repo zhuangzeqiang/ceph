@@ -70,6 +70,7 @@
 #include "perfglue/cpu_profiler.h"
 #include "perfglue/heap_profiler.h"
 
+//#include "include/rados.h"
 
 #define dout_subsys ceph_subsys_mds
 #undef dout_prefix
@@ -831,6 +832,25 @@ void MDSDaemon::handle_mds_map(MMDSMap *m)
   // Calculate my effective rank (either my owned rank or my
   // standby_for_rank if in standby replay)
   mds_rank_t whoami = mdsmap->get_rank_gid(mds_gid_t(monc->get_global_id()));
+
+  if (whoami != MDS_RANK_NONE && mdsmap->is_active(whoami)) {
+    bool found = false;
+    MDSMap::mds_info_t info = mdsmap->get_info(whoami);
+
+    for (map<mds_gid_t,MDSMap::mds_info_t>::const_iterator p = oldmap->get_mds_info().begin();
+       p != oldmap->get_mds_info().end();
+       ++p) {
+      if (p->second.state == MDSMap::STATE_STANDBY_REPLAY &&
+	  (p->second.standby_for_rank == whoami ||(info.name.length() && p->second.standby_for_name == info.name))) {
+	found = true;
+	break;
+      }
+      if (found)
+	mds_rank->mdlog->set_write_iohint(0);
+      else
+	mds_rank->mdlog->set_write_iohint(CEPH_OSD_OP_FLAG_FADVISE_DONTNEED);
+    }
+  }
 
   // verify compatset
   CompatSet mdsmap_compat(get_mdsmap_compat_set_all());

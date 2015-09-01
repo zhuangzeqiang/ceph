@@ -997,7 +997,6 @@ if(${WITH_RADOSGW})
     cls_replica_log_client
     cls_user_client
     curl expat global
-    fcgi
     resolv
     ${BLKID_LIBRARIES}
     ${TCMALLOC_LIBS})

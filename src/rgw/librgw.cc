@@ -56,6 +56,8 @@ using std::string;
 
 static std::mutex librgw_mtx;
 
+RGWLib librgw; /* XXX initialize? */
+
 extern "C" {
 
 int librgw_create(librgw_t* rgw, const char* const id)
@@ -472,6 +474,91 @@ int RGWLibIO::set_uid(RGWRados* store, string& uid)
   return ret;
 }
 
+/* TODO: implement */
+  int RGWLib::get_userinfo_by_uid(const string& uid, RGWUserInfo& info)
+  {
+    return 0;
+  }
+
+  int RGWLib::get_user_acl()
+  {
+    return 0;
+  }
+
+  int RGWLib::set_user_permissions()
+  {
+    return 0;
+  }
+
+  int RGWLib::set_user_quota()
+  {
+    return 0;
+  }
+
+  int RGWLib::get_user_quota()
+  {
+    return 0;
+  }
+
+  int RGWLib::get_user_buckets_list()
+  {
+    return 0;
+  }
+
+  int RGWLib::get_bucket_objects_list()
+  {
+    return 0;
+  }
+
+  int RGWLib::create_bucket()
+  {
+    return 0;
+  }
+
+  int RGWLib::delete_bucket()
+  {
+    return 0;
+  }
+
+  int RGWLib::get_bucket_attributes()
+  {
+    return 0;
+  }
+
+  int RGWLib::set_bucket_attributes()
+  {
+    return 0;
+  }
+
+  int RGWLib::create_object ()
+  {
+    return 0;
+  }
+
+  int RGWLib::delete_object()
+  {
+    return 0;
+  }
+
+  int RGWLib::write()
+  {
+    return 0;
+  }
+
+  int RGWLib::read()
+  {
+    return 0;
+  }
+
+  int RGWLib::get_object_attributes()
+  {
+    return 0;
+  }
+
+  int RGWLib::set_object_attributes()
+  {
+    return 0;
+  }
 
 /* TODO: implement */
 int RGWLibIO::send_status(const char* status, const char* status_name)

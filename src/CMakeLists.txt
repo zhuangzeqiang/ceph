@@ -984,8 +984,8 @@ if(${WITH_RADOSGW})
     rgw/rgw_file.cc
     )
 
-  add_library(rgw STATIC ${librgw_srcs} $<TARGET_OBJECTS:heap_profiler_objs>)
-  target_link_libraries(rgw
+  add_library(rgw SHARED ${librgw_srcs} $<TARGET_OBJECTS:heap_profiler_objs>)
+  target_link_libraries(rgw PRIVATE
     rgw_a
     librados
     cls_rgw_client

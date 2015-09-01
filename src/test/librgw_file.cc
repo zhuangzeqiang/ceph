@@ -23,19 +23,13 @@
 #include "global/global_init.h"
 
 namespace {
-
-  librgw_t rgw;
-
+  librgw_t rgw = nullptr;
 }
 
 TEST(LibRGW, INIT) {
-  int ret;
-  librgw_t rgw;
-
-  ret = librgw_create(&rgw, NULL);
+  int ret = librgw_create(&rgw, NULL);
   ASSERT_EQ(ret, 0);
-
-
+  ASSERT_NE(rgw, nullptr);
 }
 
 TEST(LibRGW, SHUTDOWN) {
@@ -44,12 +38,6 @@ TEST(LibRGW, SHUTDOWN) {
 
 int main(int argc, char *argv[])
 {
-  vector<const char*> args;
-  argv_to_vec(argc, (const char **)argv, args);
-
-  global_init(NULL, args, CEPH_ENTITY_TYPE_CLIENT,
-	      CODE_ENVIRONMENT_UTILITY, 0);
-  common_init_finish(g_ceph_context);
   ::testing::InitGoogleTest(&argc, argv);
   return RUN_ALL_TESTS();
 }

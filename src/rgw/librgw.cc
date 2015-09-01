@@ -48,10 +48,15 @@
 #include <sstream>
 #include <string>
 #include <string.h>
+#include <mutex>
 
 #define dout_subsys ceph_subsys_rgw
 
 using std::string;
+
+static std::mutex librgw_mtx;
+
+extern "C" {
 
 int librgw_create(librgw_t* rgw, const char* const id)
 {
@@ -59,13 +64,21 @@ int librgw_create(librgw_t* rgw, const char* const id)
   if (id) {
     iparams.name.set(CEPH_ENTITY_TYPE_CLIENT, id);
   }
+
   CephContext* cct = common_preinit(iparams, CODE_ENVIRONMENT_LIBRARY, 0);
   cct->_conf->set_val("log_to_stderr", "false"); // quiet by default
   cct->_conf->set_val("err_to_stderr", "true"); // quiet by default
   cct->_conf->parse_env(); // environment variables override
   cct->_conf->apply_changes(NULL);
-
   common_init_finish(cct);
+
+  /* assign ref'd cct as g_ceph_context if none exists */
+  if (! g_ceph_context) {
+    std::lock_guard<std::mutex> lg(librgw_mtx);
+    if (! g_ceph_context)
+      g_ceph_context = cct->get();
+  }
+
   *rgw = cct;
   return 0;
 }
@@ -543,3 +556,5 @@ int librgw_stop()
 {
   return rgwlib.stop();
 }
+
+} /* extern "C" */

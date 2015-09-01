@@ -998,7 +998,6 @@ if(${WITH_RADOSGW})
     cls_user_client
     curl expat global
     resolv
-    ${BLKID_LIBRARIES}
     ${TCMALLOC_LIBS})
 
   install(TARGETS rgw DESTINATION lib)

@@ -291,6 +291,12 @@ void RGWLibProcess::handle_request(RGWRequest* r)
   delete req;
 }
 
+int RGWLibFrontend::init()
+{
+  /* XXX */
+  return 0;
+}
+
 void RGWLibFrontend::gen_request(const string& method, const string& resource,
 				 int content_length, bool user_command,
 				 atomic_t* fail_flag)
@@ -451,6 +457,28 @@ int RGWLibIO::set_uid(RGWRados* store, string& uid)
 	 << dendl;
   }
   return ret;
+}
+
+
+/* TODO: implement */
+int RGWLibIO::send_status(const char* status, const char* status_name)
+{
+  return 0;
+}
+
+int RGWLibIO::send_100_continue()
+{
+  return 0;
+}
+
+int RGWLibIO::complete_header()
+{
+  return 0;
+}
+
+int RGWLibIO::send_content_length(uint64_t len)
+{
+  return 0;
 }
 
 int RGWLibIO::write_data(const char* buf, int len)

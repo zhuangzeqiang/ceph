@@ -88,8 +88,8 @@ protected:
 
 public:
   RGWProcessFrontend(RGWProcessEnv& pe, RGWFrontendConfig *_conf)
-	  : conf(_conf), pprocess(NULL), env(pe), thread(NULL) {
-  }
+    : conf(_conf), pprocess(NULL), env(pe), thread(NULL)
+    {}
 
   ~RGWProcessFrontend() {
     delete thread;

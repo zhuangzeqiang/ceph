@@ -203,6 +203,7 @@ Replaces: ceph-client-tools,
 	  librbd1 (<< 0.92-1238)
 Breaks: ceph (<< 9.0.0-943),
 	python-ceph (<< 0.92-1223),
+	ceph-test (<< 9.0.3-1483),
 	librbd1 (<< 0.92-1238)
 Suggests: ceph, ceph-mds
 Description: common utilities to mount and interact with a ceph storage cluster

@@ -348,6 +348,14 @@ protected:
 
   // cache
   ceph::unordered_map<vinodeno_t, Inode*> inode_map;
+#if SIZEOF_INO_T < 8
+  // fake inode number for 32-bits ino_t
+  map<ino_t, vinodeno_t> faked_ino_map;
+  interval_set<ino_t> free_faked_inos;
+  ino_t last_used_faked_ino;
+#endif
+  void reset_faked_inos();
+
   Inode*                 root;
   map<Inode*, InodeRef>  root_parents;
   Inode*                 root_ancestor;
@@ -927,6 +935,9 @@ public:
     Mutex::Locker lock(client_lock);
     return _get_vino(in);
   }
+#if SIZEOF_INO_T < 8
+  vinodeno_t ll_faked_to_vino(ino_t ino);
+#endif
   Inode *ll_get_inode(vinodeno_t vino);
   int ll_lookup(Inode *parent, const char *name, struct stat *attr,
 		Inode **out, int uid = -1, int gid = -1);

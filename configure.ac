@@ -329,6 +329,13 @@ AC_DEFUN([CHECK_RESOLV_LIBS], [{
   LIBS="${saved_LIBS}"
 }])
 
+
+# check size of ino_t
+AC_CHECK_SIZEOF([ino_t],[],[
+  #include <sys/types.h>
+  ])
+AC_DEFINE_UNQUOTED(SIZEOF_INO_T, $ac_cv_sizeof_ino_t, [size of ino_t])
+
 RESOLV_LIBS=""
 CHECK_RESOLV_LIBS([$RESOLV_LIBS], [resolv_libs="ok"])
 if test x"$resolv_libs" != "xok"; then

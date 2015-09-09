@@ -161,6 +161,16 @@ dir_result_t::dir_result_t(Inode *in)
     buffer(0) {
 }
 
+void Client::reset_faked_inos()
+{
+#if SIZEOF_INO_T < 8
+  ino_t start = 1024;
+  free_faked_inos.clear();
+  free_faked_inos.insert(start, (uint32_t)-1 - start + 1);
+  last_used_faked_ino = 0;
+#endif
+}
+
 // cons/des
 
 Client::Client(Messenger *m, MonClient *mc)
@@ -192,6 +202,8 @@ Client::Client(Messenger *m, MonClient *mc)
     client_lock("Client::client_lock")
 {
   monclient->set_messenger(m);
+
+  reset_faked_inos();
 
   //
   root = 0;
@@ -276,6 +288,7 @@ void Client::tear_down_cache()
     while (!root_parents.empty())
       root_parents.erase(root_parents.begin());
     inode_map.clear();
+    reset_faked_inos();
   }
 
   assert(inode_map.empty());
@@ -573,6 +586,7 @@ void Client::trim_cache(bool trim_kernel_dcache)
     while (!root_parents.empty())
       root_parents.erase(root_parents.begin());
     inode_map.clear();
+    reset_faked_inos();
   }
 }
 
@@ -745,6 +759,26 @@ Inode * Client::add_update_inode(InodeStat *st, utime_t from,
   } else {
     in = new Inode(this, st->vino, &st->layout);
     inode_map[st->vino] = in;
+
+#if SIZEOF_INO_T < 8
+    interval_set<ino_t>::const_iterator it = free_faked_inos.lower_bound(last_used_faked_ino + 1);
+    if (it == free_faked_inos.end() && last_used_faked_ino > 0) {
+      last_used_faked_ino = 0;
+      it = free_faked_inos.lower_bound(last_used_faked_ino + 1);
+    }
+    assert(it != free_faked_inos.end());
+    if (last_used_faked_ino < it.get_start()) {
+      assert(it.get_len() > 0);
+      last_used_faked_ino = it.get_start();
+    } else {
+      ++last_used_faked_ino;
+      assert(it.get_start() + it.get_len() > last_used_faked_ino);
+    }
+    in->faked_ino = last_used_faked_ino;
+    free_faked_inos.erase(in->faked_ino);
+    faked_ino_map[in->faked_ino] = st->vino;
+#endif
+
     if (!root) {
       root = in;
       root_ancestor = in;
@@ -2576,6 +2610,10 @@ void Client::put_inode(Inode *in, int n)
     assert(!unclean);
     put_qtree(in);
     inode_map.erase(in->vino());
+#if SIZEOF_INO_T < 8
+    free_faked_inos.insert(in->faked_ino);
+    faked_ino_map.erase(in->faked_ino);
+#endif
     in->cap_item.remove_myself();
     in->snaprealm_item.remove_myself();
     in->snapdir_parent.reset();
@@ -3309,7 +3347,12 @@ public:
 void Client::_async_invalidate(InodeRef& in, int64_t off, int64_t len, bool keep_caps)
 {
   ldout(cct, 10) << "_async_invalidate " << off << "~" << len << (keep_caps ? " keep_caps" : "") << dendl;
-  ino_invalidate_cb(callback_handle, in->vino(), off, len);
+#if SIZEOF_INO_T < 8
+  vinodeno_t vino(in->faked_ino, CEPH_NOSNAP);
+#else
+  vinodeno_t vino = in->vino();
+#endif
+  ino_invalidate_cb(callback_handle, vino, off, len);
 
   client_lock.Lock();
   if (!keep_caps)
@@ -4393,9 +4436,15 @@ private:
 public:
   C_Client_DentryInvalidate(Client *c, Dentry *dn, bool del) :
     client(c), name(dn->name) {
+#if SIZEOF_INO_T < 8
+      dirino.ino = dn->dir->parent_inode->faked_ino;
+      if (del)
+	ino.ino = dn->inode->faked_ino;
+#else
       dirino = dn->dir->parent_inode->vino();
       if (del)
 	ino = dn->inode->vino();
+#endif
       else
 	ino.ino = inodeno_t();
   }
@@ -5809,7 +5858,11 @@ int Client::fill_stat(Inode *in, struct stat *st, frag_info_t *dirstat, nest_inf
 	   << " mode 0" << oct << in->mode << dec
 	   << " mtime " << in->mtime << " ctime " << in->ctime << dendl;
   memset(st, 0, sizeof(struct stat));
+#if SIZEOF_INO_T < 8
+  st->st_ino = in->faked_ino;
+#else
   st->st_ino = in->ino;
+#endif
   st->st_dev = in->snapid;
   st->st_mode = in->mode;
   st->st_rdev = in->rdev;
@@ -6363,9 +6416,9 @@ int Client::readdir_r_cb(dir_result_t *d, add_dirent_cb_t cb, void *p)
     assert(diri->dn_set.size() < 2); // can't have multiple hard-links to a dir
     uint64_t next_off = 1;
 
-    fill_dirent(&de, ".", S_IFDIR, diri->ino, next_off);
-
     fill_stat(diri, &st);
+
+    fill_dirent(&de, ".", S_IFDIR, st.st_ino, next_off);
 
     client_lock.Unlock();
     int r = cb(p, &de, &st, -1, next_off);
@@ -6382,8 +6435,8 @@ int Client::readdir_r_cb(dir_result_t *d, add_dirent_cb_t cb, void *p)
     ldout(cct, 15) << " including .." << dendl;
     if (!diri->dn_set.empty()) {
       InodeRef& in = diri->get_first_parent()->inode;
-      fill_dirent(&de, "..", S_IFDIR, in->ino, 2);
       fill_stat(in, &st);
+      fill_dirent(&de, "..", S_IFDIR, st.st_ino, 2);
     } else {
       /* must be at the root (no parent),
        * so we add the dotdot with a special inode (3) */
@@ -8665,6 +8718,17 @@ snapid_t Client::ll_get_snapid(Inode *in)
   Mutex::Locker lock(client_lock);
   return in->snapid;
 }
+
+#if SIZEOF_INO_T < 8
+vinodeno_t Client::ll_faked_to_vino(ino_t ino)
+{
+  if (ino == 1)
+    return root->vino();
+  if (faked_ino_map.count(ino))
+    return faked_ino_map[ino];
+  return vinodeno_t(0, CEPH_NOSNAP);
+}
+#endif
 
 Inode *Client::ll_get_inode(vinodeno_t vino)
 {

@@ -1106,11 +1106,18 @@ void ECBackend::handle_sub_read_reply(
 	  ++is_complete;
 	}
       } else {
-	if (!rop.complete[iter->first].errors.empty())
-	  dout(10) << __func__ << " Enough copies for " << iter->first << " (ignore errors)" << dendl;
-	++is_complete;
-	rop.complete[iter->first].errors.clear();
         assert(rop.complete[iter->first].r == 0);
+	if (!rop.complete[iter->first].errors.empty()) {
+	  if (cct->_conf->osd_read_ec_check_for_errors) {
+	    dout(10) << __func__ << ": Not ignoring errors, use one shard err=" << err << dendl;
+	    err = rop.complete[iter->first].errors.begin()->second;
+            rop.complete[iter->first].r = err;
+	  } else {
+	    dout(10) << __func__ << " Enough copies for " << iter->first << " (ignore errors)" << dendl;
+	    rop.complete[iter->first].errors.clear();
+	  }
+	}
+	++is_complete;
       }
     }
   }
